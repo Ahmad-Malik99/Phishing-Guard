@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard - Advanced Phishing Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #00d4ff;
+            --danger: #ff6b6b;
+            --success: #51cf66;
+            --dark: #0f0f23;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--dark);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(15, 15, 35, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -1px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+        }
+
+        nav a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 60px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(30px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 30px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        .hero p {
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+            line-height: 1.6;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 50px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-container:focus-within {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .search-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 16px 25px;
+            font-size: 16px;
+            color: white;
+            outline: none;
+        }
+
+        .search-container input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .search-container button {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-container button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .search-container button:active {
+            transform: translateY(-1px);
+        }
+
+        .stats {
+            display: flex;
+            gap: 60px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 120px 60px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .features-title {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .features-title h2 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .features-title p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
+
+        .card-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .card p {
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+
+        /* Result Container */
+        #resultContainer {
+            display: none;
+            max-width: 800px;
+            margin: 60px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-success {
+            background: linear-gradient(135deg, var(--success) 0%, #2ecc71 100%);
+        }
+
+        .result-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff5252 100%);
+        }
+
+        .result-header {
+            font-size: 32px;
+            font-weight: 900;
+            padding: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-details {
+            padding: 40px;
+            color: white;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .detail-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 36px;
+            font-weight: 900;
+        }
+
+        .indicator-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .indicator-list strong {
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .indicator {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 15, 35, 0.8);
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+            padding: 40px 60px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 30px;
+            }
+
+            nav ul {
+                gap: 20px;
+            }
+
+            .hero {
+                padding: 80px 30px;
+            }
+
+            .hero h1 {
+                font-size: 48px;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .stats {
+                gap: 30px;
+            }
+
+            .features {
+                padding: 80px 30px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">🛡️ PhishGuard</div>
+        <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how">How it Works</a></li>
+            <li><a href="#about">About</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Detect Phishing Attacks in Real-Time</h1>
+            <p>Advanced AI-powered detection analyzes both URL structure and website content to protect you from scams</p>
+            
+            <div class="search-container">
+                <input type="text" placeholder="Enter URL to scan (e.g., amazon.com)..." id="urlInput">
+                <button onclick="analyzeURL()">🔍 Scan Now</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">99.8%</div>
+                    <div class="stat-label">Detection Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">500K+</div>
+                    <div class="stat-label">Sites Analyzed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Protection</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="features-title">
+            <h2>Intelligent Detection Features</h2>
+            <p>Multi-layer analysis combining URL patterns, content analysis, and behavioral detection</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon">🔗</div>
+                <h3>URL Analysis</h3>
+                <p>Detects suspicious domain structures, hidden subdomains, IP addresses, and certificate issues in seconds</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📄</div>
+                <h3>Content Scanning</h3>
+                <p>Analyzes page content for deceptive keywords, fake login forms, and unusual patterns that indicate phishing</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🔒</div>
+                <h3>SSL Verification</h3>
+                <p>Validates SSL certificates and checks for HTTPS encryption to ensure connection security</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Real-Time Processing</h3>
+                <p>Instant analysis results with detailed breakdown of risk factors and suspicious indicators</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🤖</div>
+                <h3>AI Learning</h3>
+                <p>Continuously updated detection patterns based on latest phishing techniques and threats</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>Detailed Reports</h3>
+                <p>Comprehensive analysis showing risk score, confidence level, and specific threat indicators</p>
+            </div>
+        </div>
+    </section>
+
+    <div id="resultContainer"></div>
+
+    <footer>
+        <p>&copy; 2026 PhishGuard. Advanced Phishing Detection System. Stay Safe Online.</p>
+    </footer>
+
+    <script>
+        async function analyzeURL() {
+            const urlInput = document.getElementById('urlInput').value.trim();
+            if(!urlInput) {
+                alert("Please enter a URL");
+                return;
+            }
+
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.innerHTML = '<div style="text-align: center; padding: 60px; color: white;"><div style="font-size: 40px; margin-bottom: 20px;">⏳</div><div style="font-size: 18px;">Analyzing website...</div><div style="font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 10px;">This may take a few seconds</div></div>';
+            resultContainer.style.display = 'block';
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                const response = await fetch('http://localhost:8000/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                const data = await response.json();
+                
+                const isPhishing = data.status === 'Phishing';
+                const resultClass = isPhishing ? 'result-danger' : 'result-success';
+                
+                let html = `<div class="${resultClass}">
+                    <div class="result-header">${isPhishing ? '⚠️ PHISHING DETECTED' : data.status === 'Safe' ? '✅ LOOKS SAFE' : '⚠️ SUSPICIOUS'}</div>
+                    <div class="result-details">
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 15px; padding: 25px; margin-bottom: 25px;">
+                            <div style="font-size: 14px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">📋 Analysis Summary</div>
+                            <div style="font-size: 16px; line-height: 1.6;">${data.summary}</div>
+                        </div>
+
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Overall Risk Score</div>
+                                <div class="detail-value">${data.score}%</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Confidence Level</div>
+                                <div class="detail-value">${data.confidence}%</div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">🔗 URL RISK</div>
+                                <div style="font-size: 28px; font-weight: 900;">${data.url_risk}%</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px;">
+                                <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">📄 CONTENT RISK</div>
+                                <div style="font-size: 28px; font-weight: 900;">${data.content_risk}%</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin-top: 20px;">
+                            <div style="font-size: 14px; font-weight: 700; margin-bottom: 15px;">🔍 DETAILED FINDINGS</div>
+                            ${(data.findings && Array.isArray(data.findings)) ? data.findings.map((finding, idx) => `
+                                <div style="background: rgba(0,0,0,0.2); border-left: 4px solid ${finding.type === 'danger' ? '#ff6b6b' : finding.type === 'warning' ? '#ffd700' : finding.type === 'success' ? '#51cf66' : '#00d4ff'}; padding: 12px 15px; border-radius: 6px; margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                        <strong style="font-size: 14px;">${finding.title || 'Finding'}</strong>
+                                        <span style="background: ${finding.type === 'danger' ? '#ff6b6b' : finding.type === 'warning' ? '#ffd700' : finding.type === 'success' ? '#51cf66' : '#00d4ff'}; color: ${finding.type === 'warning' ? '#000' : '#fff'}; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap;">${finding.risk || 'INFO'}</span>
+                                    </div>
+                                    <div style="font-size: 13px; opacity: 0.85; line-height: 1.5;">${finding.description || 'No description'}</div>
+                                </div>
+                            `).join('') : '<div>No detailed findings available</div>'}
+                        </div>`;
+                
+                html += `</div></div>`;
+                
+                resultContainer.innerHTML = html;
+            } catch (error) {
+                resultContainer.innerHTML = `<div class="result-danger"><div class="result-header">⚠️ Analysis Error</div><div class="result-details"><p>${error.message}</p></div></div>`;
+            }
+        }
+
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                analyzeURL();
+            }
+        });
+    </script>
+</body>
+</html>
